@@ -1,0 +1,60 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", YuGothic, "ヒラギノ角ゴ ProN W3", Hiragino Kaku Gothic ProN, Arial, "メイリオ", Meiryo, sans-serif;
+  background-color: #333;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+div, form {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.input {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #333;
+  border-bottom: 1px solid #fff;
+  line-height: 32px;
+  padding: 0 16px;
+}
+
+.input_exit {
+  position: absolute;
+  right: 16px;
+}
+
+.logs {
+  overflow: hidden;
+  margin-top: 32px;
+  padding: 12px 16px;
+}
+
+.log {
+  line-height: 1.8;
+}
+
+.log_name {
+
+}
+
+.log_name-admin {
+  color: red;
+  font-weight: bold;
+}
+
+.log_body {
+}
+
+.log_body:before {
+  content: ' > ';
+  display: 'inline';
+}
+
+.log_date {
+  margin-left: 1em;
+  font-size: 70%;
+  color: #ccc;
+}
