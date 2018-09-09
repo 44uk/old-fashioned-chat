@@ -21,7 +21,8 @@ exports.postWeclomeMessage = profsRef.onCreate((snap, context) => {
 
 exports.postByeMessage = functions.auth.user().onDelete(user => {
   console.debug('--- user#onDelete')
-  return admin.database().ref(`/profs/${user.uid}`).on('value', snap => {
+  const profRef = admin.database().ref(`/profs/${user.uid}`);
+  return profRef.on('value', snap => {
     const prof = snap.val();
     logsRef.push({
       name: ADMIN_NAME,
@@ -29,7 +30,7 @@ exports.postByeMessage = functions.auth.user().onDelete(user => {
       body: `${prof.name || 'No Name'}さんが退室しました。`,
       date: (new Date()).toISOString()
     })
-    return snap.remove();
+    return profRef.remove();
   })
 });
 
