@@ -5,10 +5,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#333">
   <link href="./index.css" rel="stylesheet" type="text/css" />
-  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-database.js"></script>
+  <link href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-database.js"></script>
   <script src="./index.js"></script>
 </head>
 <body>
@@ -16,7 +17,7 @@
     <div class="input">
       <div v-if="session">
         <form class="post" @submit="write" style="display:inline-block">
-          <input class="post_body" type="text" v-model="body" v-focus />
+          <input class="post_body" type="text" v-model="body" v-focus required />
           <button>送信</button>
         </form>
         <button class="input_exit" @click="exit">退室</button>

@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "logs": {
+      ".read": true,
+      ".write": "auth !== null"
+    },
+    "profs": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}

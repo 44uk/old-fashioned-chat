@@ -1,9 +1,4 @@
 function main() {
-  var SYSTEM_SESSION = {
-    name: "■管理人■",
-    color: "yellow",
-    isAdmin: true
-  };
   var COLOR_DEFS = [
     {value: 'deepskyblue'  , text: 'あお'},
     {value: 'palevioletred', text: 'あか'},
@@ -11,7 +6,8 @@ function main() {
     {value: 'mediumpurple' , text: 'むらさき'},
     {value: 'hotpink'      , text: 'ピンク'},
     {value: 'darkorange'   , text: 'オレンジ'}
-  ]
+  ];
+
   var config = {
     apiKey: "AIzaSyDvPQCWEA0gK0B_TE-C0B5bKL2GFCb4EdM",
     authDomain: "old-fashioned-chat.firebaseapp.com",
@@ -59,23 +55,42 @@ function main() {
     props: {
       log: Object
     },
-    template: '<div class="log" :data-key="log.key"><span :style="nameColor" :class="nameClass">{{ log.name }}</span><span class="log_body">{{ log.body }}</span><span class="log_date">({{ localDatetime }})</span></div>',
+    template: '<div class="log" :data-key="log.key"><span :style="nameColor" class="log_name">{{ log.name }}</span><span class="log_body">{{ log.body }}</span><span class="log_date">({{ localDatetime }})</span></div>',
     computed: {
       localDatetime: function () {
         var date = new Date(this.log.date);
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
       },
-      nameClass: function () {
-        return {
-          "log_name": true,
-          "log_name-admin": this.log.isAdmin
-        };
-      },
       nameColor: function () {
         return { color: this.log.color };
       }
+    },
+    methods: {
+      submit: function (ev) {
+        this.$emit('submit', key);
+      }
     }
   });
+
+  //Vue.component('chat-login', {
+  //  props: {
+  //    name: String,
+  //    color: String
+  //  },
+  //  template: '
+  //      <form @submit="enter" style="display:inline-block">
+  //        <input type="text" v-model="name" v-focus />
+  //        <color-selector v-model="color"></color-selector>
+  //        <button>入室</button>
+  //      </form>
+  //  ',
+  //  methods: {
+  //  }
+  //})
+
+  //Vue.component('chat-input', {
+  //  template: '',
+  //})
 
   var vm = new Vue({
     el: "#app",
@@ -89,48 +104,69 @@ function main() {
       }
     },
     created: function () {
-      var self = this;
       var logsRef = firebase.database().ref('logs');
-      logsRef.on('child_added', function (data) {
+      logsRef.orderByChild('date').limitToLast(100).on('child_added', function (data) {
+        console.debug('called on child_added on /logs')
         var log = data.val();
         log.key = data.key;
-        self.logs.unshift(log);
-      });
-      var sessionStr = Cookies.get('session');
-      if(sessionStr) {
-        var session = JSON.parse(sessionStr);
-        this.login(session.name, session.color);
-      }
+        this.logs.unshift(log);
+      }.bind(this));
+
+      firebase.auth().onAuthStateChanged(function (user) {
+        if (user) {
+          console.debug('logged in')
+          this.login(user);
+        } else {
+          console.debug('not logged in')
+        }
+      }.bind(this));
     },
     methods: {
-      login: function (name, color) {
-        this.session = {name: name, color: color};
-        Cookies.set('session', this.session, { expires: 90 });
-      },
-      logout: function () {
-        this.name = null;
-        this.color = null;
-        this.body = null;
-        this.session = null;
-        Cookies.remove('session');
-      },
       enter: function (ev) {
         ev.preventDefault();
-        this.post(SYSTEM_SESSION, this.name + " さんが入室しました。")
-          .then(function (_) { this.login(this.name, this.color); }.bind(this))
-          .catch(function (err) { console.error(err) })
+        firebase.auth().signInAnonymously()
+          .then(function (data) {
+            console.debug('signInAnonymously')
+            var user = data.user;
+            var profRef = firebase.database().ref('profs/' + user.uid);
+            var prof = {
+              name: this.name,
+              color: this.color
+            }
+            return profRef.set(prof).then(function () {
+              return user;
+            });
+          }.bind(this))
+          .then(function (data) {
+            this.login(data);
+          }.bind(this))
+          .catch(function (err) {
+            alert("ログインに失敗しました。もう一度お試しください。");
+            console.error(err)
+          })
         ;
+      },
+      login: function (user) {
+        var profRef = firebase.database().ref('profs/' + user.uid);
+        return profRef.on('value', function (snapshot) {
+          var prof = snapshot.val();
+          this.session = {
+            uid: user.uid,
+            name: prof.name,
+            color: prof.color
+          };
+          return this.session;
+        }.bind(this))
       },
       write: function (ev) {
         ev.preventDefault();
-        this.post(this.session, this.body);
-        this.body = null;
-      },
-      exit: function (ev) {
-        ev.preventDefault();
-        this.post(SYSTEM_SESSION, this.session.name + " さんが退室しました。")
-          .then(this.logout.bind(this))
-          .catch(function (err) { console.error(err) })
+        this.post(this.session, this.body)
+          .then(function(_) {
+            this.body = null;
+          }.bind(this))
+          .catch(function(err) {
+            console.log(err);
+          })
         ;
       },
       post: function (session, body) {
@@ -142,6 +178,25 @@ function main() {
           date: (new Date()).toISOString(),
           isAdmin: !!session.isAdmin
         });
+      },
+      exit: function (ev) {
+        ev.preventDefault();
+        firebase.auth().currentUser.delete()
+          .then(function (_) {
+            return this.logout();
+          }.bind(this))
+          .catch(function(err) {
+            console.log(err);
+          })
+        ;
+      },
+      logout: function () {
+        var name = this.session.name;
+        this.name = null;
+        this.color = null;
+        this.body = null;
+        this.session = null;
+        return Promise.resolve(name);
       }
     }
   });
