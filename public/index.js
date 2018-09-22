@@ -24,10 +24,39 @@ function main() {
     }
   });
 
-  Vue.component('color-selector', {
-    props: {
-      color: String
+  Vue.component('input-form', {
+    data: function () {
+      return {
+        body: null
+      }
     },
+    template: '#tmpl-input-form',
+    methods: {
+      submit: function (ev) {
+        ev.preventDefault();
+        this.$emit('on-submit', {body: this.body});
+        this.body = null;
+      }
+    }
+  });
+
+  Vue.component('enter-form', {
+    data: function () {
+      return {
+        name: null,
+        color: null
+      }
+    },
+    template: '#tmpl-enter-form',
+    methods: {
+      submit: function (ev) {
+        ev.preventDefault();
+        this.$emit('on-submit', {name: this.name, color: this.color});
+      }
+    }
+  });
+
+  Vue.component('color-selector', {
     data: function () {
       return {
         colors: COLOR_DEFS
@@ -38,7 +67,7 @@ function main() {
         this.$emit('input', COLOR_DEFS[0].value);
       }
     },
-    template: '<select @input="updateValue"><option v-for="c in colors" :key="c.value" :name="c.value">{{ c.text }}</option></select>',
+    template: '#tmpl-color-selector',
     methods: {
       updateValue: function (ev) {
         var selected = ev.target.selectedOptions[0];
@@ -51,15 +80,24 @@ function main() {
     }
   });
 
+  Vue.component('logs', {
+    props: {
+      collection: Array
+    },
+    template: '#tmpl-logs'
+  });
+
   Vue.component('log', {
     props: {
       log: Object
     },
-    template: '<div class="log" :data-key="log.key"><span :style="nameColor" class="log_name">{{ log.name }}</span><span class="log_body">{{ log.body }}</span><span class="log_date">({{ localDatetime }})</span></div>',
+    template: '#tmpl-log',
     computed: {
       localDatetime: function () {
         var date = new Date(this.log.date);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        return date.toLocaleDateString() +
+          ' ' + date.toLocaleTimeString()
+        ;
       },
       nameColor: function () {
         return { color: this.log.color };
@@ -72,34 +110,11 @@ function main() {
     }
   });
 
-  //Vue.component('chat-login', {
-  //  props: {
-  //    name: String,
-  //    color: String
-  //  },
-  //  template: '
-  //      <form @submit="enter" style="display:inline-block">
-  //        <input type="text" v-model="name" v-focus />
-  //        <color-selector v-model="color"></color-selector>
-  //        <button>入室</button>
-  //      </form>
-  //  ',
-  //  methods: {
-  //  }
-  //})
-
-  //Vue.component('chat-input', {
-  //  template: '',
-  //})
-
   var vm = new Vue({
     el: "#app",
     data: function () {
       return {
-        name: null,
-        color: null,
         session: null,
-        body: null,
         logs: []
       }
     },
@@ -114,24 +129,23 @@ function main() {
 
       firebase.auth().onAuthStateChanged(function (user) {
         if (user) {
-          console.debug('logged in')
+          console.debug('logged in');
           this.login(user);
         } else {
-          console.debug('not logged in')
+          console.debug('not logged in');
         }
       }.bind(this));
     },
     methods: {
-      enter: function (ev) {
-        ev.preventDefault();
+      enter: function (payload) {
         firebase.auth().signInAnonymously()
           .then(function (data) {
             console.debug('signInAnonymously')
             var user = data.user;
             var profRef = firebase.database().ref('profs/' + user.uid);
             var prof = {
-              name: this.name,
-              color: this.color
+              name: payload.name,
+              color: payload.color
             }
             return profRef.set(prof).then(function () {
               return user;
@@ -158,12 +172,8 @@ function main() {
           return this.session;
         }.bind(this))
       },
-      write: function (ev) {
-        ev.preventDefault();
-        this.post(this.session, this.body)
-          .then(function(_) {
-            this.body = null;
-          }.bind(this))
+      write: function (payload) {
+        this.post(this.session, payload.body)
           .catch(function(err) {
             console.log(err);
           })
@@ -192,9 +202,6 @@ function main() {
       },
       logout: function () {
         var name = this.session.name;
-        this.name = null;
-        this.color = null;
-        this.body = null;
         this.session = null;
         return Promise.resolve(name);
       }

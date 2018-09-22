@@ -1,11 +1,11 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#333">
+  <meta name="theme-color" content="#333" />
   <link href="./index.css" rel="stylesheet" type="text/css" />
-  <link href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-auth.js"></script>
@@ -16,23 +16,51 @@
   <div id="app">
     <div class="input">
       <div v-if="session">
-        <form class="post" @submit="write" style="display:inline-block">
-          <input class="post_body" type="text" v-model="body" v-focus required />
-          <button>送信</button>
-        </form>
         <button class="input_exit" @click="exit">退室</button>
+        <input-form @on-submit="write" />
       </div>
       <div v-if="session === null">
-        <form @submit="enter" style="display:inline-block">
-          <input type="text" v-model="name" v-focus />
-          <color-selector v-model="color"></color-selector>
-          <button>入室</button>
-        </form>
+        <enter-form @on-submit="enter" />
       </div>
     </div>
-    <div class="logs">
-      <log v-for="log in logs" :key="log.key" :log="log" />
-    </div>
+    <logs :collection="logs" />
   </div>
+
+  <script type="text/x-template" id="tmpl-logs">
+    <div class="logs">
+      <log v-for="log in collection" :key="log.key" :log="log" />
+    </div>
+  </script>
+
+  <script type="text/x-template" id="tmpl-color-selector">
+    <select @input="updateValue" style="height:22px">
+      <option v-for="c in colors" :key="c.value" :name="c.value">
+        {{ c.text }}
+      </option>
+    </select>
+  </script>
+
+  <script type="text/x-template" id="tmpl-log">
+    <div class="log" :data-key="log.key">
+      <span :style="nameColor" class="log_name">{{ log.name }}</span>
+      <span class="log_body">{{ log.body }}</span>
+      <span class="log_date">({{ localDatetime }})</span>
+    </div>
+  </script>
+
+  <script type="text/x-template" id="tmpl-input-form">
+    <form class="post" @submit="submit" style="display:inline-block">
+      <input class="post_body" type="text" v-model="body" v-focus required />
+      <button>送信</button>
+    </form>
+  </script>
+
+  <script type="text/x-template" id="tmpl-enter-form">
+    <form class="entry" @submit="submit" style="display:inline-block">
+      <input class="entry_body" type="text" v-model="name" v-focus required />
+      <color-selector v-model="color"></color-selector>
+      <button>入室</button>
+    </form>
+  </script>
 </body>
 </html>
