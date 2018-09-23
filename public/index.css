@@ -6,6 +6,18 @@ body {
   padding: 0;
 }
 
+@media screen and (min-width: 0px) and (max-width: 320px) {
+  body {
+    font-size: 85%;
+  }
+}
+
+@media screen and (min-width: 321px) and (max-width: 800px) {
+  body {
+    font-size: 90%;
+  }
+}
+
 div, form {
   box-sizing: border-box;
   margin: 0;
@@ -39,16 +51,11 @@ div, form {
 }
 
 .log {
-  line-height: 1.8;
+  line-height: 1.6;
 }
 
 .log_name {
 
-}
-
-.log_name-admin {
-  color: red;
-  font-weight: bold;
 }
 
 .log_body {
@@ -56,11 +63,11 @@ div, form {
 
 .log_body:before {
   content: ' > ';
-  display: 'inline';
+  display: inline;
 }
 
 .log_date {
-  margin-left: 1em;
+  margin-left: 0.5em;
   font-size: 70%;
   color: #ccc;
 }

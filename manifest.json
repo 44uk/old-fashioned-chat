@@ -1,0 +1,7 @@
+{
+    "name": "OldFashionedChat",
+    "short_name": "OldFashionedChat",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#333"
+}
