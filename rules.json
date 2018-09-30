@@ -1,14 +1,27 @@
 {
   "rules": {
+    ".write": false,
     "logs": {
       ".read": true,
       ".write": "auth !== null",
-      ".indexOn": ["date"]
+      ".indexOn": ["date"],
+      "$uid": {
+        "body": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        }
+      }
     },
     "profs": {
       "$uid": {
         ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
+        ".write": "$uid === auth.uid",
+        ".validate": "newData.hasChildren(['name', 'color'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 16"
+        },
+        "color": {
+          ".validate": "newData.isString()"
+        }
       }
     },
     "users": {

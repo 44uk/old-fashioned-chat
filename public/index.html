@@ -11,6 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-storage.js"></script>
   <script src="./index.js"></script>
 </head>
 <body>
@@ -34,7 +35,7 @@
   </script>
 
   <script type="text/x-template" id="tmpl-color-selector">
-    <select @input="updateValue" style="height:22px">
+    <select @input="updateValue" :required="required" style="height:22px">
       <option v-for="c in colors" :key="c.value" :name="c.value">
         {{ c.text }}
       </option>
@@ -45,22 +46,25 @@
     <div class="log" :data-key="log.key">
       <span :style="nameColor" class="log_name">{{ log.name }}</span>
       <span class="log_body">{{ log.body }}</span>
-      <span class="log_date">({{ localDatetime }})</span>
+      <span class="log_date" v-if="localDatetime">({{ localDatetime }})</span>
+      <img class="log_attachment" :src="log.attachmentUrl" v-if="log.attachmentUrl" />
     </div>
-  </script>
-
-  <script type="text/x-template" id="tmpl-input-form">
-    <form class="post" @submit="submit" style="display:inline-block">
-      <input class="post_body" type="text" v-model="body" v-focus required />
-      <button>送信</button>
-    </form>
   </script>
 
   <script type="text/x-template" id="tmpl-enter-form">
     <form class="entry" @submit="submit" style="display:inline-block">
-      <input class="entry_body" type="text" v-model="name" v-focus required />
-      <color-selector v-model="color"></color-selector>
+      <input class="entry_body" type="text" v-model.trim="name" v-focus required maxlength="16" />
+      <color-selector v-model="color" :required="true"></color-selector>
       <button>入室</button>
+    </form>
+  </script>
+
+  <script type="text/x-template" id="tmpl-input-form">
+    <form class="post" @submit="submit" style="display:inline-block">
+      <input class="post_body" type="text" v-model="text" v-focus require maxlength="120" />
+      <button>送信</button>
+      <input ref="file" v-on:change="onSetFile" type="file" accept=".jpg,.jpeg,.png,.gif" />
+      <input type="reset" />
     </form>
   </script>
 </body>

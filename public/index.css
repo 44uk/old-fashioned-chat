@@ -66,6 +66,12 @@ div, form {
   display: inline;
 }
 
+.log_attachment {
+  display: block;
+  width: 80%;
+  padding: 4px;
+}
+
 .log_date {
   margin-left: 0.5em;
   font-size: 70%;
